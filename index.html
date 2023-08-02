@@ -102,6 +102,9 @@
     function animateTransition(input) {
       const stackElement = document.getElementById('stack');
       const inputDisplay = document.getElementById('input-display');
+      if (input === null) {
+        input = "";
+      }
       let zeroes = false;
       let ones = false;
       let twos = false;
@@ -110,94 +113,97 @@
       let delay = false;
       let i = 0;
       let j = input.length - 1;
-      const interval = setInterval(() => {
+      if (input != "") {
+        const interval = setInterval(() => {
+          var currentSymbol;
 
-        var currentSymbol;
-
-        if (!ones) {
-          inputDisplay.innerHTML = input.slice(0, i) + `<span style="background-color: #FFD700">${input[i]}</span>` + input.slice(i + 1);
-          currentSymbol = input[i];
-        } else {
-        inputDisplay.innerHTML = input.slice(0, j) + `<span style="background-color: #FFD700">${input[j]}</span>` + input.slice(j + 1);
-          currentSymbol = input[j];
-        }
-
-        // 0^n
-        if (!zeroes) {
-          if (currentSymbol === '0') {
-            stackSymbols.push('0');
-            updateStackDisplay(stackElement, stackSymbols);
-            i++;
-          } else if (currentSymbol === '1') {
-            zeroes = true;
+          if (!ones) {
+            inputDisplay.innerHTML = input.slice(0, i) + `<span style="background-color: #FFD700">${input[i]}</span>` + input.slice(i + 1);
+            currentSymbol = input[i];
           } else {
-            //put error here
-            reject = true;
+            inputDisplay.innerHTML = input.slice(0, j) + `<span style="background-color: #FFD700">${input[j]}</span>` + input.slice(j + 1);
+            currentSymbol = input[j];
           }
-        }
 
-        // 1^n
-        if (zeroes && !ones) {
-          if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '0') {
-            stackSymbols.pop();
-            updateStackDisplay(stackElement, stackSymbols);
-            i++;
-          } else if (currentSymbol === '2' && stackSymbols[stackSymbols.length - 1] === 'Z') {
-            ones = true;
+          // 0^n
+          if (!zeroes) {
+            if (currentSymbol === '0') {
+              stackSymbols.push('0');
+              updateStackDisplay(stackElement, stackSymbols);
+              i++;
+            } else if (currentSymbol === '1') {
+              zeroes = true;
+            } else {
+              //put error here
+              reject = true;
+            }
+          }
+
+          // 1^n
+          if (zeroes && !ones) {
+            if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '0') {
+              stackSymbols.pop();
+              updateStackDisplay(stackElement, stackSymbols);
+              i++;
+            } else if (currentSymbol === '2' && stackSymbols[stackSymbols.length - 1] === 'Z') {
+              ones = true;
+            } else {
+              //put error here
+              reject = true;
+            }
+          }
+
+          // 2^n
+          if (ones && !twos) {
+            if (!delay) {
+              delay = true
+              j = j;
+            } else if (currentSymbol === '2' && delay) {
+              stackSymbols.push('2');
+              updateStackDisplay(stackElement, stackSymbols);
+              j--;
+            } else if (currentSymbol === '1') {
+              twos = true;
+            } else {
+              //put error here
+              reject = true;
+            }
+          }
+
+          if (twos && !(accept || reject)) {
+            console.log(currentSymbol);
+            if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '2') {
+              stackSymbols.pop();
+              j--;
+              updateStackDisplay(stackElement, stackSymbols);
+            } else if (currentSymbol === '0' && stackSymbols[stackSymbols.length - 1] === 'Z') {
+              stackSymbols.pop();
+              updateStackDisplay(stackElement, stackSymbols);
+              //accept here
+              accept = true;
+              console.log("accept");
+            } else {
+              //reject here
+              reject = true;
+            }
+          }
+
+          if (accept) {
+            showAcceptedMessage();
+            clearInterval(interval);
+            return;
+          } else if (reject) {
+            showRejectedMessage();
+            clearInterval(interval);
+            return;
           } else {
-            //put error here
-            reject = true;
+
           }
-        }
 
-        // 2^n
-        if (ones && !twos) {
-          if (!delay) {
-            delay = true
-            j = j;
-          } else if (currentSymbol === '2' && delay) {
-            stackSymbols.push('2');
-            updateStackDisplay(stackElement, stackSymbols);
-            j--;
-          } else if (currentSymbol === '1') {
-            twos = true;
-          } else {
-            //put error here
-            reject = true;
-          }
-        }
-
-        if (twos && !(accept || reject)) {
-          console.log(currentSymbol);
-          if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '2') {
-            stackSymbols.pop();
-            j--;
-            updateStackDisplay(stackElement, stackSymbols);
-          } else if (currentSymbol === '0' && stackSymbols[stackSymbols.length - 1] === 'Z') {
-            stackSymbols.pop();
-            updateStackDisplay(stackElement, stackSymbols);
-            //accept here
-            accept = true;
-            console.log("accept");
-          } else {
-            //reject here
-            reject = true;
-          }
-        }
-
-        if (accept) {
-          showAcceptedMessage();
-          clearInterval(interval);
-          return;
-        } else if (reject) {
-          showRejectedMessage();
-          clearInterval(interval);
-          return;
-        } else {
-
-        }
-
-      }, 1000); // 2 seconds interval between transitions
+        }, 1000); // 2 seconds interval between transitions
+      } else {
+        showAcceptedMessage();
+      }
     }
 
     function updateStackDisplay(stackElement, symbols) {
