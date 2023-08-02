@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two-Way Pushdown Automaton Animation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #animation-container {
+      width: 400px;
+      height: 200px;
+      border: 2px solid #333;
+      padding: 10px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #stack {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: 380px;
+      height: 30px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4px;
+      overflow: hidden;
+    }
+
+    .stack-symbol {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border: 1px solid #999;
+      margin-right: 4px;
+    }
+
+    #animation-button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+
+      #message {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Two-Way Pushdown Automata Animation</h1>
+  <h2>{0^n1^n2^n | n >= 0}</h2>
+  <div id="message"></div>
+  <div>
+    <label for="inputString">Enter a string:</label>
+    <input type="text" id="inputString" placeholder="Enter a string...">
+    <button id="animation-button" onclick="startAnimation()">Start Animation</button>
+  </div>
+  <div id="animation-container">
+    <p id="input-display"></p>
+    <div id="stack"></div>
+  </div>
+
+  <script>
+    function showAcceptedMessage() {
+      const messageDiv = document.getElementById("message");
+      messageDiv.textContent = "Accepted!";
+      messageDiv.style.color = "green";
+    }
+
+    function showRejectedMessage() {
+      const messageDiv = document.getElementById("message");
+      messageDiv.textContent = "Rejected!";
+      messageDiv.style.color = "red";
+    }
+
+    const stackSymbols = ['Z']; // Initial stack symbol (Z represents an empty stack)
+
+    function startAnimation() {
+      const input = document.getElementById('inputString').value;
+      const inputDisplay = document.getElementById('input-display');
+      inputDisplay.textContent = input;
+      animateTransition(input);
+    }
+
+    function animateTransition(input) {
+      const stackElement = document.getElementById('stack');
+      const inputDisplay = document.getElementById('input-display');
+      let zeroes = false;
+      let ones = false;
+      let twos = false;
+      let accept = false;
+      let reject = false;
+      let delay = false;
+      let i = 0;
+      let j = input.length - 1;
+      const interval = setInterval(() => {
+
+        var currentSymbol;
+
+        if (!ones) {
+          inputDisplay.innerHTML = input.slice(0, i) + `<span style="background-color: #FFD700">${input[i]}</span>` + input.slice(i + 1);
+          currentSymbol = input[i];
+        } else {
+        inputDisplay.innerHTML = input.slice(0, j) + `<span style="background-color: #FFD700">${input[j]}</span>` + input.slice(j + 1);
+          currentSymbol = input[j];
+        }
+
+        // 0^n
+        if (!zeroes) {
+          if (currentSymbol === '0') {
+            stackSymbols.push('0');
+            updateStackDisplay(stackElement, stackSymbols);
+            i++;
+          } else if (currentSymbol === '1') {
+            zeroes = true;
+          } else {
+            //put error here
+            reject = true;
+          }
+        }
+
+        // 1^n
+        if (zeroes && !ones) {
+          if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '0') {
+            stackSymbols.pop();
+            updateStackDisplay(stackElement, stackSymbols);
+            i++;
+          } else if (currentSymbol === '2' && stackSymbols[stackSymbols.length - 1] === 'Z') {
+            ones = true;
+          } else {
+            //put error here
+            reject = true;
+          }
+        }
+
+        // 2^n
+        if (ones && !twos) {
+          if (!delay) {
+            delay = true
+            j = j;
+          } else if (currentSymbol === '2' && delay) {
+            stackSymbols.push('2');
+            updateStackDisplay(stackElement, stackSymbols);
+            j--;
+          } else if (currentSymbol === '1') {
+            twos = true;
+          } else {
+            //put error here
+            reject = true;
+          }
+        }
+
+        if (twos && !(accept || reject)) {
+          console.log(currentSymbol);
+          if (currentSymbol === '1' && stackSymbols[stackSymbols.length - 1] === '2') {
+            stackSymbols.pop();
+            j--;
+            updateStackDisplay(stackElement, stackSymbols);
+          } else if (currentSymbol === '0' && stackSymbols[stackSymbols.length - 1] === 'Z') {
+            stackSymbols.pop();
+            updateStackDisplay(stackElement, stackSymbols);
+            //accept here
+            accept = true;
+            console.log("accept");
+          } else {
+            //reject here
+            reject = true;
+          }
+        }
+
+        if (accept) {
+          showAcceptedMessage();
+          clearInterval(interval);
+          return;
+        } else if (reject) {
+          showRejectedMessage();
+          clearInterval(interval);
+          return;
+        } else {
+
+        }
+
+      }, 1000); // 2 seconds interval between transitions
+    }
+
+    function updateStackDisplay(stackElement, symbols) {
+      const stackContents = symbols.map(symbol => `<div class="stack-symbol">${symbol}</div>`).join('');
+      stackElement.innerHTML = stackContents;
+    }
+  </script>
+</body>
+
+</html>
